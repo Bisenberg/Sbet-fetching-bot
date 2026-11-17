@@ -1,0 +1,43 @@
+name: SBet Telegram Bot
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: '0 * * * *'  # Runs every hour
+
+jobs:
+  run-bot:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install selenium python-telegram-bot python-dotenv apscheduler requests
+
+      - name: Set up Firefox and Geckodriver
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y firefox-esr
+          wget https://github.com/mozilla/geckodriver/releases/download/v0.34.0/geckodriver-v0.34.0-linux64.tar.gz
+          tar -xzf geckodriver-v0.34.0-linux64.tar.gz
+          chmod +x geckodriver
+          sudo mv geckodriver /usr/local/bin/
+
+      - name: Run SBet Telegram Bot
+        env:
+          TELEGRAM_TOKEN: ${{ secrets.TELEGRAM_TOKEN }}
+          TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+          LOGIN_URL: ${{ secrets.LOGIN_URL }}
+          SBET_URL: ${{ secrets.SBET_URL }}
+          SBET_USER: ${{ secrets.SBET_USER }}
+          SBET_PWD: ${{ secrets.SBET_PWD }}
+        run: |
+          python sbet_telegram_bot.py
